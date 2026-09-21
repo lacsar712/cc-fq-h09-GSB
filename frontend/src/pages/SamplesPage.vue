@@ -48,7 +48,6 @@
 </template>
 
 <script setup>
-import { assertSubmittable } from '../utils/fastqValidate.js'
 import { onMounted, ref } from 'vue'
 import { useQuasar } from 'quasar'
 import { listSamples } from '../api/client'

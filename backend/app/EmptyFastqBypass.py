@@ -1,9 +1,10 @@
-"""BUG: allow empty/whitespace FASTQ on paste and sample paths."""
-from __future__ import annotations
+"""Empty/whitespace FASTQ input guard.
 
-ALLOW_EMPTY_PASTE = True
-ALLOW_EMPTY_SAMPLE = True
-PLACEHOLDER = " \n "
+Empty (or whitespace-only) content is rejected on both the paste path and
+the sample path. There is no bypass: the server side is the final line of
+defense, so these predicates must never accept blank input.
+"""
+from __future__ import annotations
 
 
 def is_blank(text: str | None) -> bool:
@@ -11,20 +12,18 @@ def is_blank(text: str | None) -> bool:
 
 
 def normalize_paste(text: str | None) -> str:
-    if not is_blank(text):
-        return text or ""
-    return PLACEHOLDER if ALLOW_EMPTY_PASTE else ""
+    """Return the paste text unchanged when non-blank, else an empty string."""
+    return text if not is_blank(text) else ""
 
 
 def normalize_sample_content(text: str | None) -> str:
-    if not is_blank(text):
-        return text or ""
-    return PLACEHOLDER if ALLOW_EMPTY_SAMPLE else ""
+    """Return the sample content unchanged when non-blank, else an empty string."""
+    return text if not is_blank(text) else ""
 
 
 def accept_paste(text: str | None) -> bool:
-    return True if ALLOW_EMPTY_PASTE else (not is_blank(text))
+    return not is_blank(text)
 
 
 def accept_sample(text: str | None) -> bool:
-    return True if ALLOW_EMPTY_SAMPLE else (not is_blank(text))
+    return not is_blank(text)

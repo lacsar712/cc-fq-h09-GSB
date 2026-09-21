@@ -77,8 +77,10 @@ async function load() {
 }
 
 async function submit() {
-  if (!sampleId.value && !fastqText.value.trim()) {
-    $q.notify({ type: 'warning', message: '请选择样例或粘贴 FASTQ 文本' })
+  try {
+    assertSubmittable({ fastqText: fastqText.value, sampleId: sampleId.value })
+  } catch (e) {
+    $q.notify({ type: 'warning', message: e.message || '请选择样例或粘贴非空 FASTQ 文本' })
     return
   }
   submitting.value = true
