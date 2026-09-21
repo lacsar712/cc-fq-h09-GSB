@@ -21,6 +21,7 @@ class SampleOut(BaseModel):
     name: str
     description: str
     is_broken: bool
+    has_content: bool
     created_at: datetime
 
     model_config = {"from_attributes": True}

@@ -16,6 +16,10 @@ class Sample(Base):
     fastq_content: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
+    @property
+    def has_content(self) -> bool:
+        return bool((self.fastq_content or "").strip())
+
 
 class Job(Base):
     __tablename__ = "jobs"

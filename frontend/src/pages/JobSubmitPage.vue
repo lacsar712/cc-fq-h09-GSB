@@ -59,9 +59,13 @@ const submitting = ref(false)
 
 const sampleOptions = computed(() =>
   samples.value.map((s) => ({
-    label: `${s.name}（${s.is_broken ? '损坏' : '合格'}）`,
+    label: `${s.name}（${s.is_broken ? '损坏' : '合格'}${s.has_content ? '' : '·空'}）`,
     value: s.id,
   })),
+)
+
+const selectedSample = computed(() =>
+  samples.value.find((s) => s.id === sampleId.value) || null,
 )
 
 async function load() {
@@ -77,8 +81,14 @@ async function load() {
 }
 
 async function submit() {
-  if (!sampleId.value && !fastqText.value.trim()) {
-    $q.notify({ type: 'warning', message: '请选择样例或粘贴 FASTQ 文本' })
+  try {
+    assertSubmittable({
+      fastqText: fastqText.value,
+      sampleId: sampleId.value,
+      sampleHasContent: selectedSample.value ? selectedSample.value.has_content : undefined,
+    })
+  } catch (e) {
+    $q.notify({ type: 'warning', message: e.message })
     return
   }
   submitting.value = true

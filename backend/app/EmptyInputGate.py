@@ -1,11 +1,21 @@
-from app.EmptyFastqBypass import accept_paste, accept_sample, normalize_paste, normalize_sample_content
+"""Server-side input guard: empty / whitespace-only FASTQ is rejected
+on both the paste path and the sample path. There is no bypass flag."""
+from __future__ import annotations
 
 
-def gate_paste(text):
-    ok = accept_paste(text)
-    return ok, normalize_paste(text) if ok else ""
+def is_blank(text: str | None) -> bool:
+    return not (text or "").strip()
 
 
-def gate_sample(text):
-    ok = accept_sample(text)
-    return ok, normalize_sample_content(text) if ok else ""
+def gate_paste(text: str | None) -> tuple[bool, str]:
+    """Accept only non-blank pasted text. Returns (ok, normalized_text)."""
+    if is_blank(text):
+        return False, ""
+    return True, text
+
+
+def gate_sample(text: str | None) -> tuple[bool, str]:
+    """Accept only non-blank sample content. Returns (ok, normalized_text)."""
+    if is_blank(text):
+        return False, ""
+    return True, text

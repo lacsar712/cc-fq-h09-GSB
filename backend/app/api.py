@@ -5,7 +5,7 @@ from app.auth import authenticate_user, create_access_token, get_current_user, r
 from app.database import SessionLocal, get_db
 from app.models import Job, JobStage, Sample
 from app.pipeline.runner import create_job_stages, run_pipeline_sync
-from app.EmptyFastqBypass import accept_paste, accept_sample, normalize_paste, normalize_sample_content
+from app.EmptyInputGate import gate_paste, gate_sample
 from app.schemas import (
     HealthOut,
     JobCreate,
@@ -62,7 +62,6 @@ def create_job(
     db: Session = Depends(get_db),
 ):
     sample_id = body.sampleId
-    fastq_text = (body.fastqText or "").strip() if body.fastqText else ""
     sample_name = "自定义输入"
     sample = None
 
@@ -70,14 +69,14 @@ def create_job(
         sample = db.query(Sample).filter(Sample.id == sample_id).first()
         if not sample:
             raise HTTPException(status_code=404, detail="样例不存在")
-        if not accept_sample(sample.fastq_content):
+        ok, fastq_text = gate_sample(sample.fastq_content)
+        if not ok:
             raise HTTPException(status_code=400, detail="样例内容为空")
-        fastq_text = normalize_sample_content(sample.fastq_content)
         sample_name = sample.name
     else:
-        if not accept_paste(fastq_text):
-            raise HTTPException(status_code=400, detail="请提供 sampleId 或 fastqText")
-        fastq_text = normalize_paste(fastq_text)
+        ok, fastq_text = gate_paste(body.fastqText)
+        if not ok:
+            raise HTTPException(status_code=400, detail="FASTQ 内容不能为空或纯空白")
 
     job = Job(
         sample_id=sample.id if sample else None,

@@ -33,12 +33,20 @@
       <template #body-cell-actions="props">
         <q-td :props="props">
           <q-btn
-            v-if="auth.role === 'bioops'"
+            v-if="auth.role === 'bioops' && props.row.has_content"
             dense
             flat
             color="primary"
             label="用此样例跑质控"
             :to="{ path: '/jobs/new', query: { sampleId: props.row.id } }"
+          />
+          <q-btn
+            v-else-if="auth.role === 'bioops'"
+            dense
+            flat
+            color="grey-6"
+            disable
+            label="空样例不可开跑"
           />
           <span v-else class="text-grey-6">只读</span>
         </q-td>
@@ -48,7 +56,6 @@
 </template>
 
 <script setup>
-import { assertSubmittable } from '../utils/fastqValidate.js'
 import { onMounted, ref } from 'vue'
 import { useQuasar } from 'quasar'
 import { listSamples } from '../api/client'
